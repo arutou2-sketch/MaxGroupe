@@ -52,6 +52,7 @@
       border-radius: 9px;
       font-size: 16px;
       outline: none;
+      background: #ffffff;
     }
 
     input:focus {
@@ -128,66 +129,74 @@
   </div>
 
   <script>
-    const N8N_WEBHOOK_URL = 'https://n8n.bot-assist.online/webhook/32d6d348-f941-4881-95f9-f84f039e460f';
+    document.addEventListener('DOMContentLoaded', function () {
+      const N8N_WEBHOOK_URL = 'https://n8n.bot-assist.online/webhook/32d6d348-f941-4881-95f9-f84f039e460f';
 
-    const form = document.getElementById('bindForm');
-    const btn = document.getElementById('sendBtn');
-    const statusEl = document.getElementById('status');
+      const form = document.getElementById('bindForm');
+      const btn = document.getElementById('sendBtn');
+      const statusEl = document.getElementById('status');
 
-    const dealInput = document.getElementById('dealId');
-    const contactInput = document.getElementById('contactId');
-    const passwordInput = document.getElementById('password');
+      const dealInput = document.getElementById('dealId');
+      const contactInput = document.getElementById('contactId');
+      const passwordInput = document.getElementById('password');
 
-    function onlyDigits(value) {
-      return String(value || '').replace(/\D/g, '');
-    }
-
-    function clearInputs() {
-      dealInput.value = '';
-      contactInput.value = '';
-      passwordInput.value = '';
-    }
-
-    window.addEventListener('load', clearInputs);
-    window.addEventListener('pageshow', clearInputs);
-
-    form.addEventListener('submit', async function (event) {
-      event.preventDefault();
-
-      const deal_id = onlyDigits(dealInput.value);
-      const contact_id = onlyDigits(contactInput.value);
-      const password = String(passwordInput.value || '').trim();
-
-      if (!deal_id || !contact_id || !password) {
-        statusEl.textContent = 'Ошибка ❌\nЗаполни ID сделки, ID контакта и пароль.';
-        clearInputs();
+      if (!form || !btn || !statusEl || !dealInput || !contactInput || !passwordInput) {
+        console.error('Не найдены элементы формы');
         return;
       }
 
-      btn.disabled = true;
-      statusEl.textContent = 'Отправляю запрос...';
-
-      try {
-        await fetch(N8N_WEBHOOK_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          body: JSON.stringify({
-            deal_id: deal_id,
-            contact_id: contact_id,
-            password: password
-          })
-        });
-
-        statusEl.textContent = 'Запрос отправлен ✅\nПроверь сделку в amoCRM.';
-        clearInputs();
-
-      } catch (e) {
-        statusEl.textContent = 'Ошибка ❌\nЗапрос не ушел в n8n. Проверь webhook URL или доступность n8n.';
-        clearInputs();
-
-      } finally {
-        btn.disabled = false;
+      function onlyDigits(value) {
+        return String(value || '').replace(/\D/g, '');
       }
+
+      function clearInputs() {
+        dealInput.value = '';
+        contactInput.value = '';
+        passwordInput.value = '';
+      }
+
+      clearInputs();
+
+      window.addEventListener('pageshow', clearInputs);
+
+      form.addEventListener('submit', async function (event) {
+        event.preventDefault();
+
+        const deal_id = onlyDigits(dealInput.value);
+        const contact_id = onlyDigits(contactInput.value);
+        const password = String(passwordInput.value || '').trim();
+
+        if (!deal_id || !contact_id || !password) {
+          statusEl.textContent = 'Ошибка ❌\nЗаполни ID сделки, ID контакта и пароль.';
+          clearInputs();
+          return;
+        }
+
+        btn.disabled = true;
+        statusEl.textContent = 'Отправляю запрос...';
+
+        try {
+          await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({
+              deal_id: deal_id,
+              contact_id: contact_id,
+              password: password
+            })
+          });
+
+          statusEl.textContent = 'Запрос отправлен ✅\nПроверь сделку в amoCRM.';
+          clearInputs();
+
+        } catch (e) {
+          statusEl.textContent = 'Ошибка ❌\nЗапрос не ушел в n8n. Проверь webhook URL или доступность n8n.';
+          clearInputs();
+
+        } finally {
+          btn.disabled = false;
+        }
+      });
     });
   </script>
 </body>
