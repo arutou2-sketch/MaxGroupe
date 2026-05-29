@@ -58,6 +58,7 @@
       margin-top: 16px;
       white-space: pre-wrap;
       font-size: 14px;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -67,10 +68,10 @@
     <h2>Привязать контакт Wazzup к сделке</h2>
 
     <label>ID сделки amoCRM</label>
-    <input id="dealId" placeholder="Например: 56811525" />
+    <input id="dealId" inputmode="numeric" placeholder="Например: 56811525" />
 
     <label>ID контакта amoCRM / Wazzup</label>
-    <input id="contactId" placeholder="Например: 74591307" />
+    <input id="contactId" inputmode="numeric" placeholder="Например: 74591025" />
 
     <button id="sendBtn">Привязать</button>
 
@@ -83,12 +84,16 @@
     const btn = document.getElementById('sendBtn');
     const statusEl = document.getElementById('status');
 
+    function onlyDigits(value) {
+      return String(value || '').replace(/\D/g, '');
+    }
+
     btn.onclick = async () => {
-      const deal_id = document.getElementById('dealId').value.trim();
-      const contact_id = document.getElementById('contactId').value.trim();
+      const deal_id = onlyDigits(document.getElementById('dealId').value);
+      const contact_id = onlyDigits(document.getElementById('contactId').value);
 
       if (!deal_id || !contact_id) {
-        statusEl.textContent = 'Ошибка: заполните ID сделки и ID контакта.';
+        statusEl.textContent = 'Ошибка ❌\nЗаполни ID сделки и ID контакта.';
         return;
       }
 
@@ -99,18 +104,25 @@
         const res = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
           headers: {
-            'Content-Type': 'text/plain'
+            'Content-Type': 'text/plain;charset=UTF-8'
           },
           body: JSON.stringify({
-            deal_id,
-            contact_id
+            deal_id: deal_id,
+            contact_id: contact_id
           })
         });
 
-        const data = await res.json();
+        const rawText = await res.text();
+
+        let data = {};
+        try {
+          data = rawText ? JSON.parse(rawText) : {};
+        } catch (e) {
+          throw new Error('n8n вернул не JSON:\n' + rawText);
+        }
 
         if (!res.ok || data.success === false) {
-          throw new Error(data.message || 'Ошибка n8n');
+          throw new Error(data.message || data.error || 'Ошибка n8n');
         }
 
         statusEl.textContent =
@@ -119,7 +131,10 @@
           'Контакт amoCRM: ' + data.contact_id;
 
       } catch (e) {
-        statusEl.textContent = 'Ошибка ❌\n' + e.message;
+        statusEl.textContent =
+          'Ошибка ❌\n' +
+          e.message + '\n\n' +
+          'Если execution в n8n не появился — проверь, что workflow активен.';
       } finally {
         btn.disabled = false;
       }
