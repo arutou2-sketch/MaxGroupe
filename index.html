@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
-  <title>Привязка MAX-группы к сделке amoCRM</title>
+  <title>Привязка контакта Wazzup к сделке amoCRM</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
@@ -64,16 +64,13 @@
 
 <body>
   <div class="card">
-    <h2>Привязать MAX-группу к сделке</h2>
+    <h2>Привязать контакт Wazzup к сделке</h2>
 
     <label>ID сделки amoCRM</label>
-    <input id="dealId" placeholder="Например: 12345678" />
+    <input id="dealId" placeholder="Например: 56811525" />
 
-    <label>ID группового чата MAX</label>
-    <input id="chatId" placeholder="Например: 1234567890" />
-
-    <label>Название группы</label>
-    <input id="groupName" placeholder="Например: MAX группа — ООО Ромашка" />
+    <label>ID контакта amoCRM / Wazzup</label>
+    <input id="contactId" placeholder="Например: 74591307" />
 
     <button id="sendBtn">Привязать</button>
 
@@ -81,18 +78,17 @@
   </div>
 
   <script>
-    const N8N_WEBHOOK_URL = 'https://n8n.bot-assist.online/webhook/32d6d348-f941-4881-95f9-f84f039e460f';
+    const N8N_WEBHOOK_URL = 'https://YOUR_N8N_DOMAIN/webhook/bind-contact-to-deal';
 
     const btn = document.getElementById('sendBtn');
     const statusEl = document.getElementById('status');
 
     btn.onclick = async () => {
       const deal_id = document.getElementById('dealId').value.trim();
-      const chat_id = document.getElementById('chatId').value.trim();
-      const group_name = document.getElementById('groupName').value.trim();
+      const contact_id = document.getElementById('contactId').value.trim();
 
-      if (!deal_id || !chat_id) {
-        statusEl.textContent = 'Ошибка: заполните ID сделки и ID чата.';
+      if (!deal_id || !contact_id) {
+        statusEl.textContent = 'Ошибка: заполните ID сделки и ID контакта.';
         return;
       }
 
@@ -103,12 +99,11 @@
         const res = await fetch(N8N_WEBHOOK_URL, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'text/plain'
           },
           body: JSON.stringify({
             deal_id,
-            chat_id,
-            group_name
+            contact_id
           })
         });
 
@@ -121,8 +116,7 @@
         statusEl.textContent =
           'Готово ✅\n' +
           'Сделка amoCRM: ' + data.deal_id + '\n' +
-          'Контакт amoCRM: ' + data.contact_id + '\n' +
-          'MAX chat_id: ' + data.chat_id;
+          'Контакт amoCRM: ' + data.contact_id;
 
       } catch (e) {
         statusEl.textContent = 'Ошибка ❌\n' + e.message;
