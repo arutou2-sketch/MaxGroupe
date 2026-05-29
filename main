@@ -81,7 +81,7 @@
   </div>
 
   <script>
-    const N8N_WEBHOOK_URL = 'https://YOUR_N8N_DOMAIN/webhook/maxgroup-bind-manual';
+    const N8N_WEBHOOK_URL = 'https://n8n.bot-assist.online/workflow/kQurbtWFrCG7q0z7';
 
     const btn = document.getElementById('sendBtn');
     const statusEl = document.getElementById('status');
