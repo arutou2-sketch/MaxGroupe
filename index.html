@@ -1,69 +1,194 @@
-<script>
-  const N8N_WEBHOOK_URL = 'https://n8n.bot-assist.online/webhook/32d6d348-f941-4881-95f9-f84f039e460f';
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Привязка контакта Wazzup к сделке amoCRM</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  const form = document.getElementById('bindForm');
-  const btn = document.getElementById('sendBtn');
-  const statusEl = document.getElementById('status');
+  <meta http-equiv="Cache-Control" content="no-store">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
-  const dealInput = document.getElementById('dealId');
-  const contactInput = document.getElementById('contactId');
-  const passwordInput = document.getElementById('password');
-
-  function onlyDigits(value) {
-    return String(value || '').replace(/\D/g, '');
-  }
-
-  function clearInputs() {
-    dealInput.value = '';
-    contactInput.value = '';
-    passwordInput.value = '';
-  }
-
-  window.addEventListener('load', clearInputs);
-  window.addEventListener('pageshow', clearInputs);
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-
-    const deal_id = onlyDigits(dealInput.value);
-    const contact_id = onlyDigits(contactInput.value);
-    const password = String(passwordInput.value || '').trim();
-
-    if (!deal_id || !contact_id || !password) {
-      statusEl.textContent = 'Ошибка ❌\nЗаполни ID сделки, ID контакта и пароль.';
-      clearInputs();
-      return;
+  <style>
+    * {
+      box-sizing: border-box;
     }
 
-    btn.disabled = true;
-    statusEl.textContent = 'Отправляю запрос...';
-
-    try {
-      await fetch(N8N_WEBHOOK_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({
-          deal_id: deal_id,
-          contact_id: contact_id,
-          password: password
-        })
-      });
-
-      statusEl.textContent =
-        'Запрос отправлен ✅\n' +
-        'Проверь сделку в amoCRM.';
-
-      clearInputs();
-
-    } catch (e) {
-      statusEl.textContent =
-        'Ошибка ❌\n' +
-        'Запрос не ушел в n8n. Проверь webhook URL или доступность n8n.';
-
-      clearInputs();
-
-    } finally {
-      btn.disabled = false;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f6f8;
+      padding: 32px 16px;
     }
-  });
-</script>
+
+    .card {
+      max-width: 560px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 26px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.08);
+    }
+
+    h2 {
+      margin: 0 0 22px;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    label {
+      display: block;
+      margin-top: 16px;
+      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    input {
+      width: 100%;
+      height: 44px;
+      padding: 10px 12px;
+      border: 1px solid #cfd6df;
+      border-radius: 9px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #111827;
+    }
+
+    button {
+      width: 100%;
+      height: 46px;
+      margin-top: 22px;
+      border: 0;
+      border-radius: 10px;
+      background: #090f1f;
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 18px;
+      font-size: 15px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Привязать контакт Wazzup к сделке</h2>
+
+    <form id="bindForm" autocomplete="off">
+      <label for="dealId">ID сделки amoCRM</label>
+      <input
+        id="dealId"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+
+      <label for="contactId">ID контакта amoCRM / Wazzup</label>
+      <input
+        id="contactId"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+
+      <label for="password">Пароль</label>
+      <input
+        id="password"
+        type="password"
+        autocomplete="new-password"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+
+      <button id="sendBtn" type="submit">Привязать</button>
+
+      <div id="status" class="status"></div>
+    </form>
+  </div>
+
+  <script>
+    const N8N_WEBHOOK_URL = 'https://n8n.bot-assist.online/webhook/32d6d348-f941-4881-95f9-f84f039e460f';
+
+    const form = document.getElementById('bindForm');
+    const btn = document.getElementById('sendBtn');
+    const statusEl = document.getElementById('status');
+
+    const dealInput = document.getElementById('dealId');
+    const contactInput = document.getElementById('contactId');
+    const passwordInput = document.getElementById('password');
+
+    function onlyDigits(value) {
+      return String(value || '').replace(/\D/g, '');
+    }
+
+    function clearInputs() {
+      dealInput.value = '';
+      contactInput.value = '';
+      passwordInput.value = '';
+    }
+
+    window.addEventListener('load', clearInputs);
+    window.addEventListener('pageshow', clearInputs);
+
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const deal_id = onlyDigits(dealInput.value);
+      const contact_id = onlyDigits(contactInput.value);
+      const password = String(passwordInput.value || '').trim();
+
+      if (!deal_id || !contact_id || !password) {
+        statusEl.textContent = 'Ошибка ❌\nЗаполни ID сделки, ID контакта и пароль.';
+        clearInputs();
+        return;
+      }
+
+      btn.disabled = true;
+      statusEl.textContent = 'Отправляю запрос...';
+
+      try {
+        await fetch(N8N_WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify({
+            deal_id: deal_id,
+            contact_id: contact_id,
+            password: password
+          })
+        });
+
+        statusEl.textContent = 'Запрос отправлен ✅\nПроверь сделку в amoCRM.';
+        clearInputs();
+
+      } catch (e) {
+        statusEl.textContent = 'Ошибка ❌\nЗапрос не ушел в n8n. Проверь webhook URL или доступность n8n.';
+        clearInputs();
+
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
